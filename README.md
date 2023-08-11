@@ -16,7 +16,7 @@ SQLite is public domain, sql.js is MIT licensed.
 
 ## API documentation
 A [full API documentation](https://sql.js.org/documentation/) for all the available classes and methods is available.
-Is is generated from comments inside the source code, and is thus always up to date.
+It is generated from comments inside the source code, and is thus always up to date.
 
 ## Usage
 
@@ -74,6 +74,33 @@ function add(a, b) {return a+b;}
 db.create_function("add_js", add);
 // Run a query in which the function is used
 db.run("INSERT INTO hello VALUES (add_js(7, 3), add_js('Hello ', 'world'));"); // Inserts 10 and 'Hello world'
+
+// You can create custom aggregation functions, by passing a name
+// and a set of functions to `db.create_aggregate`:
+//
+// - an `init` function. This function receives no argument and returns
+//   the initial value for the state of the aggregate function.
+// - a `step` function. This function takes two arguments
+//    - the current state of the aggregation
+//    - a new value to aggregate to the state
+//  It should return a new value for the state.
+// - a `finalize` function. This function receives a state object, and
+//   returns the final value of the aggregate. It can be omitted, in which case
+//   the final value of the state will be returned directly by the aggregate function.
+//
+// Here is an example aggregation function, `json_agg`, which will collect all
+// input values and return them as a JSON array:
+db.create_aggregate(
+  "json_agg",
+  {
+    init: () => [],
+    step: (state, val) => [...state, val],
+    finalize: (state) => JSON.stringify(state),
+  }
+);
+
+db.exec("SELECT json_agg(column1) FROM (VALUES ('hello'), ('world'))");
+// -> The result of the query is the string '["hello","world"]'
 
 // Export the database to an Uint8Array containing the SQLite database file
 const binaryArray = db.export();
@@ -194,7 +221,7 @@ You need to convert the result of `db.export` to a buffer
 const fs = require("fs");
 // [...] (create the database)
 const data = db.export();
-const buffer = new Buffer(data);
+const buffer = Buffer.from(data);
 fs.writeFileSync("filename.sqlite", buffer);
 ```
 
