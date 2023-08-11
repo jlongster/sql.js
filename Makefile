@@ -160,6 +160,11 @@ out/vfs.bc: src/vfs.c sqlite-src/$(SQLITE_AMALGAMATION)
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 -I sqlite-src/$(SQLITE_AMALGAMATION) -c src/vfs.c -o $@
 
+out/vfs.bc: src/vfs.c sqlite-src/$(SQLITE_AMALGAMATION)
+	mkdir -p out
+	# Generate llvm bitcode
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 -I sqlite-src/$(SQLITE_AMALGAMATION) -c src/vfs.c -o $@
+
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
 # 	tar --create --gzip $^ > $@
